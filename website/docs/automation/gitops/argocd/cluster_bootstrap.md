@@ -27,7 +27,9 @@ $ git -C ~/environment/argocd push --set-upstream origin main
 Create an Argo CD secret to give access to the Git repository from Argo CD:
 
 ```bash
-$ argocd repo add $GITOPS_REPO_URL_ARGOCD --ssh-private-key-path ${HOME}/.ssh/gitops_ssh.pem --insecure-ignore-host-key --upsert --name git-repo
+$ argocd repo add $GITOPS_REPO_URL_ARGOCD \
+  --ssh-private-key-path ${HOME}/.ssh/gitops_ssh.pem \
+  --insecure-ignore-host-key --upsert --name git-repo
 Repository 'ssh://...' added
 ```
 
