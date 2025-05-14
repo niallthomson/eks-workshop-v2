@@ -1,12 +1,10 @@
 apiVersion: image.toolkit.fluxcd.io/v1beta1
 kind: ImageUpdateAutomation
 metadata:
-  # HIGHLIGHT
-  name: ui
+  name: store
   namespace: flux-system
 spec:
   git:
-    # HIGHLIGHT
     checkout:
       ref:
         branch: main
@@ -17,14 +15,11 @@ spec:
       messageTemplate: "{{range .Updated.Images}}{{println .}}{{end}}"
     push:
       branch: main
-  # HIGHLIGHT
   interval: 1m0s
   sourceRef:
-    # HIGHLIGHT
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   update:
-    # HIGHLIGHT
     path: ./apps
     strategy: Setters
