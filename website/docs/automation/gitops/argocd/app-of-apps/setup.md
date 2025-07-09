@@ -53,15 +53,10 @@ $ argocd app create apps --repo $GITOPS_REPO_URL_ARGOCD \
   --upsert \
   --path app-of-apps
  application 'apps' created
+$ argocd app wait apps --timeout 120
 ```
 
-Open the Argo CD UI and navigate to the main "Applications" page:
-
-```bash
-$ argocd app sync apps
-```
-
-The App of Apps configuration has been deployed and synced, but except for the UI component all of the workload apps are marked as "Unknown".
+Open the Argo CD UI and navigate to the main "Applications" page. Our App of Apps configuration has been deployed and synced, but except for the UI component all of the workload apps are marked as "Unknown".
 
 ![argocd-ui-apps.png](assets/argocd-ui-apps-unknown.webp)
 

@@ -3,60 +3,60 @@ title: Mountpoint for Amazon S3
 sidebar_position: 20
 ---
 
-Before proceeding with this section, it's important to understand the Kubernetes storage concepts (volumes, persistent volumes (PV), persistent volume claims (PVC), dynamic provisioning, and ephemeral storage) that were covered in the [Storage](../index.md) main section.
+Before proceeding with this section, it's important to understand the Kubernetes storage concepts (volumes, persistent volumes (PV), persistent volume claims (PVC), dynamic provisioning, and ephemeral storage) that were covered in the main [Storage](../index.md) section.
 
 The [Mountpoint for Amazon S3 Container Storage Interface (CSI) Driver](https://github.com/awslabs/mountpoint-s3-csi-driver) enables Kubernetes applications to access Amazon S3 objects using a standard file system interface. Built on [Mountpoint for Amazon S3](https://github.com/awslabs/mountpoint-s3), the Mountpoint CSI driver exposes an Amazon S3 bucket as a storage volume that containers in your Kubernetes cluster can access. The driver implements the [CSI](https://github.com/container-storage-interface/spec/blob/master/spec.md) specification, allowing container orchestrators (CO) to manage storage volumes effectively.
 
 The following architecture diagram illustrates how we will use Mountpoint for Amazon S3 as persistent storage for our EKS pods:
 
-![Assets with S3](./assets/assets-s3.webp)
+![Assets with S3](./assets/s3-storage.webp)
 
 Let's begin by creating a staging directory for the images needed by our image hosting web application:
 
 ```bash
 $ mkdir ~/environment/assets-images/
-$ cd ~/environment/assets-images/
-$ curl --remote-name-all https://raw.githubusercontent.com/aws-containers/retail-store-sample-app/main/src/assets/public/assets/{chrono_classic.jpg,gentleman.jpg,pocket_watch.jpg,smart_2.jpg,wood_watch.jpg}
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 98157  100 98157    0     0   242k      0 --:--:-- --:--:-- --:--:--  242k
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 58439  100 58439    0     0   214k      0 --:--:-- --:--:-- --:--:--  214k
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 58655  100 58655    0     0   260k      0 --:--:-- --:--:-- --:--:--  260k
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 20795  100 20795    0     0  96273      0 --:--:-- --:--:-- --:--:-- 96273
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 43122  100 43122    0     0   244k      0 --:--:-- --:--:-- --:--:--  243k
-$ ls
-chrono_classic.jpg  gentleman.jpg  pocket_watch.jpg  smart_2.jpg  wood_watch.jpg
+$ wget https://github.com/aws-containers/retail-store-sample-app/releases/download/v1.2.1/sample-images.zip \
+  -O /tmp/sample-images.zip
+$ unzip /tmp/sample-images.zip -d ~/environment/assets-images/
+Archive:  /tmp/sample-images.zip
+  inflating: /home/ec2-user/environment/assets-images/1ca35e86-4b4c-4124-b6b5-076ba4134d0d.jpg
+  inflating: /home/ec2-user/environment/assets-images/4f18544b-70a5-4352-8e19-0d070f46745d.jpg
+  inflating: /home/ec2-user/environment/assets-images/631a3db5-ac07-492c-a994-8cd56923c112.jpg
+  inflating: /home/ec2-user/environment/assets-images/79bce3f3-935f-4912-8c62-0d2f3e059405.jpg
+  inflating: /home/ec2-user/environment/assets-images/8757729a-c518-4356-8694-9e795a9b3237.jpg
+  inflating: /home/ec2-user/environment/assets-images/87e89b11-d319-446d-b9be-50adcca5224a.jpg
+  inflating: /home/ec2-user/environment/assets-images/a1258cd2-176c-4507-ade6-746dab5ad625.jpg
+  inflating: /home/ec2-user/environment/assets-images/cc789f85-1476-452a-8100-9e74502198e0.jpg
+  inflating: /home/ec2-user/environment/assets-images/d27cf49f-b689-4a75-a249-d373e0330bb5.jpg
+  inflating: /home/ec2-user/environment/assets-images/d3104128-1d14-4465-99d3-8ab9267c687b.jpg
+  inflating: /home/ec2-user/environment/assets-images/d4edfedb-dbe9-4dd9-aae8-009489394955.jpg
+  inflating: /home/ec2-user/environment/assets-images/d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 ```
 
 Next, we'll copy these image assets to our S3 bucket using the `aws s3 cp` command:
 
 ```bash
-$ cd ~/environment/
 $ aws s3 cp ~/environment/assets-images/ s3://$BUCKET_NAME/ --recursive
-upload: assets-images/smart_2.jpg to s3://eks-workshop-mountpoint-s320241014192132282600000002/smart_2.jpg
-upload: assets-images/wood_watch.jpg to s3://eks-workshop-mountpoint-s320241014192132282600000002/wood_watch.jpg
-upload: assets-images/gentleman.jpg to s3://eks-workshop-mountpoint-s320241014192132282600000002/gentleman.jpg
-upload: assets-images/pocket_watch.jpg to s3://eks-workshop-mountpoint-s320241014192132282600000002/pocket_watch.jpg
-upload: assets-images/chrono_classic.jpg to s3://eks-workshop-mountpoint-s320241014192132282600000002/chrono_classic.jpg
+upload: assets-images/79bce3f3-935f-4912-8c62-0d2f3e059405.jpg to s3://eks-workshop-mountpoint-s320250709143521722200000002/79bce3f3-935f-4912-8c62-0d2f3e059405.jpg
+[...]
 ```
 
 We can verify the uploaded objects in our bucket using the `aws s3 ls` command:
 
 ```bash
 $ aws s3 ls $BUCKET_NAME
-2024-10-14 19:29:05      98157 chrono_classic.jpg
-2024-10-14 19:29:05      58439 gentleman.jpg
-2024-10-14 19:29:05      58655 pocket_watch.jpg
-2024-10-14 19:29:05      20795 smart_2.jpg
-2024-10-14 19:29:05      43122 wood_watch.jpg
+2025-07-09 14:43:36     102950 1ca35e86-4b4c-4124-b6b5-076ba4134d0d.jpg
+2025-07-09 14:43:36     118546 4f18544b-70a5-4352-8e19-0d070f46745d.jpg
+2025-07-09 14:43:36     147820 631a3db5-ac07-492c-a994-8cd56923c112.jpg
+2025-07-09 14:43:36     100117 79bce3f3-935f-4912-8c62-0d2f3e059405.jpg
+2025-07-09 14:43:36     106911 8757729a-c518-4356-8694-9e795a9b3237.jpg
+2025-07-09 14:43:36     113010 87e89b11-d319-446d-b9be-50adcca5224a.jpg
+2025-07-09 14:43:36     171045 a1258cd2-176c-4507-ade6-746dab5ad625.jpg
+2025-07-09 14:43:36     170438 cc789f85-1476-452a-8100-9e74502198e0.jpg
+2025-07-09 14:43:36      97592 d27cf49f-b689-4a75-a249-d373e0330bb5.jpg
+2025-07-09 14:43:36     169246 d3104128-1d14-4465-99d3-8ab9267c687b.jpg
+2025-07-09 14:43:36     151884 d4edfedb-dbe9-4dd9-aae8-009489394955.jpg
+2025-07-09 14:43:36     134344 d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 ```
 
 With our initial objects now in the Amazon S3 bucket, we'll configure the Mountpoint for Amazon S3 CSI driver to provide persistent, shared storage for our pods.
