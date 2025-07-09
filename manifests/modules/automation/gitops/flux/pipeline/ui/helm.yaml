@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: retail-store-sample-ui-chart
-      version: "1.1.0"
+      version: "1.2.1"
       sourceRef:
         kind: HelmRepository
         name: retail-store
@@ -28,4 +28,4 @@ spec:
         alb.ingress.kubernetes.io/healthcheck-path: /actuator/health/liveness
     image:
       repository: public.ecr.aws/aws-containers/retail-store-sample-ui # {"$imagepolicy": "flux-system:ui:name"}
-      tag: 1.1.0 # {"$imagepolicy": "flux-system:ui:tag"}
+      tag: 1.2.1 # {"$imagepolicy": "flux-system:ui:tag"}

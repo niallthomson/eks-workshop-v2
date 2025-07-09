@@ -22,7 +22,7 @@ NOTES:
 [...]
 ```
 
-For the purpose of this lab the Argo CD server UI has been exposed outside of the cluster using Kubernetes Service of `Load Balancer` type. To get the URL from Argo CD service run the following command:
+For the purpose of this lab the Argo CD server UI has been exposed outside of the cluster using a Kubernetes service to create a load balancer. To get the URL run the following commands:
 
 ```bash
 $ export ARGOCD_SERVER=$(kubectl get svc argocd-server -n argocd -o json | jq --raw-output '.status.loadBalancer.ingress[0].hostname')
@@ -71,4 +71,13 @@ In order to interact with Argo CD objects using CLI, we need to login to the Arg
 $ argocd login $ARGOCD_SERVER --username admin --password $ARGOCD_PWD --insecure
 'admin:login' logged in successfully
 Context 'acfac042a61e5467aace45fc66aee1bf-818695545.us-west-2.elb.amazonaws.com' updated
+```
+
+Finally we'll register the Git repository with ArgoCD so it has access:
+
+```bash
+$ argocd repo add $GITOPS_REPO_URL_ARGOCD \
+  --ssh-private-key-path ${HOME}/.ssh/gitops_ssh.pem \
+  --insecure-ignore-host-key --upsert --name git-repo
+Repository 'ssh://...' added
 ```

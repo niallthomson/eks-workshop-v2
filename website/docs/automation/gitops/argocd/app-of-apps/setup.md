@@ -3,13 +3,7 @@ title: "Setup"
 sidebar_position: 50
 ---
 
-Before we start to setup Argo CD applications, let's delete Argo CD `Application` which we created for `ui`:
-
-```bash wait=30
-$ argocd app delete apps --cascade -y
-```
-
-We create templates for set of ArgoCD applications using DRY approach in Helm charts:
+We'll create templates for set of ArgoCD applications using DRY approach in Helm charts:
 
 ```text
 .
@@ -19,26 +13,29 @@ We create templates for set of ArgoCD applications using DRY approach in Helm ch
 |   |   |-- _application.yaml
 |   |   `-- application.yaml
 |   `-- values.yaml
-`-- apps-kustomization
+|-- ui
+`-- catalog
     ...
 ```
 
-`Chart.yaml` is a boiler-plate. `templates` contains a template file which will be used to create applications defined in `values.yaml`.
+`_application.yaml` is a template file which will be used to dynamically create applications based on a list of component names:
 
-`values.yaml` also contains values which are specific for a particular environment and which will be applied to all application templates.
+<!-- prettier-ignore-start -->
+::yaml{file="manifests/modules/automation/gitops/argocd/app-of-apps/templates/_application.yaml"}
+<!-- prettier-ignore-end -->
 
-```file
-manifests/modules/automation/gitops/argocd/app-of-apps/values.yaml
-```
+`values.yaml` specifies a list of components for which ArgoCD applications will be generated, as well as configuration related to the Git repository common to all of the applications:
 
-First, copy `App of Apps` configuration which we described above to the Git repository directory:
+::yaml{file="manifests/modules/automation/gitops/argocd/app-of-apps/values.yaml"}
+
+First, we'll copy this foundational App of Apps configuration which we described above to the Git directory:
 
 ```bash
 $ cp -R ~/environment/eks-workshop/modules/automation/gitops/argocd/app-of-apps ~/environment/argocd/
 $ yq -i ".spec.source.repoURL = env(GITOPS_REPO_URL_ARGOCD)" ~/environment/argocd/app-of-apps/values.yaml
 ```
 
-Next, push changes to the Git repository:
+Push the changes:
 
 ```bash wait=10
 $ git -C ~/environment/argocd add .
@@ -46,10 +43,7 @@ $ git -C ~/environment/argocd commit -am "Adding App of Apps"
 $ git -C ~/environment/argocd push
 ```
 
-Finally, we need to create new Argo CD `Application` to support `App of Apps` pattern.
-We define a new path to Argo CD `Application` using `--path app-of-apps`.
-
-We also enable ArgoCD Application to automatically [synchronize](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/) the state in the cluster with the configuration in the Git repository using `--sync-policy automated`
+We'll need to create new a Argo CD Application to support the App of Apps pattern. While doing this we'll also enable ArgoCD to to automatically [synchronize](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/) the state in the cluster with the configuration in the Git repository using `--sync-policy automated`:
 
 ```bash
 $ argocd app create apps --repo $GITOPS_REPO_URL_ARGOCD \
@@ -61,32 +55,13 @@ $ argocd app create apps --repo $GITOPS_REPO_URL_ARGOCD \
  application 'apps' created
 ```
 
-The default `Refresh` interval is 3 minutes (180 seconds). You could change the interval by updating the `timeout.reconciliation` value in the `argocd-cm` ConfigMap. If the interval is to 0 then Argo CD will not poll Git repositories automatically and alternative methods such as webhooks and/or manual syncs should be used.
-
-For training purposes, let's set `Refresh` interval to 5 seconds and restart the ArgoCD application controller to deploy our changes faster:
-
-```bash wait=30
-$ kubectl patch configmap/argocd-cm -n argocd --type merge \
-  -p '{"data":{"timeout.reconciliation":"5s"}}'
-$ kubectl -n argocd rollout restart deploy argocd-repo-server
-$ kubectl -n argocd rollout status deploy/argocd-repo-server
-$ kubectl -n argocd rollout restart statefulset argocd-application-controller
-$ kubectl -n argocd rollout status statefulset argocd-application-controller
-```
-
-Open the Argo CD UI and navigate to the `apps` application.
-
-![argocd-ui-app-of-apps.png](assets/argocd-ui-app-of-apps.webp)
-
-Click `Refresh` and `Sync` in ArgoCD UI, use `argocd` CLI to `Sync` the application or wait until automatic `Sync` will be finished:
+Open the Argo CD UI and navigate to the main "Applications" page:
 
 ```bash
 $ argocd app sync apps
 ```
 
-We have Argo CD `App of Apps Application` deployed and synced.
-
-Our applications, except Argo CD `App of Apps Application`, are in `Unknown` state because we didn't deploy their configuration yet.
+The App of Apps configuration has been deployed and synced, but except for the UI component all of the workload apps are marked as "Unknown".
 
 ![argocd-ui-apps.png](assets/argocd-ui-apps-unknown.webp)
 

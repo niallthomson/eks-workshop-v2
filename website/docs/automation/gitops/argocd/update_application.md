@@ -3,44 +3,29 @@ title: "Updating an application"
 sidebar_position: 40
 ---
 
-Now we can use Argo CD and Kustomize to deploy patches to our application manifests using GitOps
+Now we can use Argo CD and Helm to configure the chart using GitOps. For example, we can increase the number of `replicas` for `ui` deployment to `3`.
 
-For example, lets increase the number of `replicas` for `ui` deployment to `3`
+Let's use a `values.yaml` to configures the number of replicas:
 
-<!--
-```kustomization
-modules/automation/gitops/argocd/update-application/deployment-patch.yaml
-Deployment/ui
-```
+::yaml{file="manifests/modules/automation/gitops/argocd/update-application/values.yaml"}
 
-Copy patch file to the Git repository directory:
+Copy the file to the Git repository directory:
 
 ```bash
-$ cp /workspace/modules/automation/gitops/argocd/update-application/deployment-patch.yaml ~/environment/argocd/apps/deployment-patch.yaml
+$ cp ~/environment/eks-workshop/modules/automation/gitops/argocd/update-application/values.yaml \
+  ~/environment/argocd/ui
 ```
 
-You can review planned changes in the file `apps/deployment-patch.yaml`
-
-To apply the patch you can edit the file `apps/kustomization.yaml` like in the example below:
-
-```file
-manifests/modules/automation/gitops/argocd/update-application/kustomization.yaml.example
-```
-
-Copy edited file `kustomization.yaml` to the Git repository directory:
+Our Git directory should now look something like this:
 
 ```bash
-$ cp /workspace/modules/automation/gitops/argocd/update-application/kustomization.yaml.example ~/environment/argocd/apps/kustomization.yaml
-```
--->
-
-You can execute commands to add necessary changes to the file `apps/deployment.yaml`:
-
-```bash
-$ yq -i '.spec.replicas = 3' ~/environment/argocd/apps/deployment.yaml
+$ tree ~/environment/argocd
+`-- ui
+    |-- Chart.yaml
+    `-- values.yaml
 ```
 
-Push changes to the Git repository
+Then push the changes:
 
 ```bash
 $ git -C ~/environment/argocd add .
@@ -51,10 +36,11 @@ $ git -C ~/environment/argocd push
 Click `Refresh` and `Sync` in ArgoCD UI or use `argocd` CLI to `Sync` the application:
 
 ```bash
-$ argocd app sync apps
+$ argocd app sync ui
+$ argocd app wait ui --timeout 120
 ```
 
-We should have now 3 pods in `ui` deployment
+We should have now 3 pods in `ui` deployment:
 
 ![argocd-update-application](assets/argocd-update-application.webp)
 
