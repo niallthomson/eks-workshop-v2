@@ -77,21 +77,21 @@ Events:
   Normal  ProvisioningSucceeded  33s   efs.csi.aws.com_efs-csi-controller-6b4ff45b65-fzqjb_7efe91cc-099a-45c7-8419-6f4b0a4f9e01  Successfully provisioned volume pvc-342a674d-b426-4214-b8b6-7847975ae121
 ```
 
-However, the EFS file system will currently be empty:
+At this point, the EFS file system is successfully mounted but currently empty:
 
 ```bash
 $ POD_1=$(kubectl -n ui get pods -l app.kubernetes.io/instance=ui -o jsonpath='{.items[0].metadata.name}')
 $ kubectl exec --stdin $POD_1 -n ui -- bash -c 'ls /efs/'
 ```
 
-So lets use a [Kubernetes Job](https://kubernetes.io/docs/concepts/workloads/controllers/job/) to populate the images:
+Let's use a [Kubernetes Job](https://kubernetes.io/docs/concepts/workloads/controllers/job/) to populate the EFS volume with images:
 
 ```bash
 $ kubectl apply -f ~/environment/eks-workshop/modules/fundamentals/storage/efs/job.yaml
 $ kubectl wait --for=condition=complete -n ui job/populate-manifests --timeout=300s
 ```
 
-Now let's demonstrate the shared storage functionality, list the current files in `/efs` through one of the UI component Pods:
+Now let's demonstrate the shared storage functionality by listing the current files in `/efs` through one of the UI component Pods:
 
 ```bash
 $ POD_1=$(kubectl -n ui get pods -l app.kubernetes.io/instance=ui -o jsonpath='{.items[0].metadata.name}')
@@ -110,13 +110,13 @@ d4edfedb-dbe9-4dd9-aae8-009489394955.jpg
 d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 ```
 
-Now lets generate a new image called `placeholder.jpg` and add it to EFS through the same Pod:
+To further demonstrate the shared storage capabilities, let's create a new image called `placeholder.jpg` and add it to the EFS volume through the first Pod:
 
 ```bash
 $ kubectl exec --stdin $POD_1 -n ui -- bash -c 'curl -o /efs/placeholder.jpg https://placehold.co/600x400/jpg?text=EKS+Workshop\\nPlaceholder'
 ```
 
-To verify the persistence and sharing of our storage layer, let's check for the file we just created using the second UI Pod:
+Now we'll verify that the second UI Pod can access this newly created file, demonstrating the shared nature of our EFS storage:
 
 ```bash
 $ POD_2=$(kubectl -n ui get pods -o jsonpath='{.items[1].metadata.name}')
@@ -136,9 +136,9 @@ d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 placeholder.jpg      <----------------
 ```
 
-As you can see, even though we created the file through the first Pod, the second Pod has immediate access to it because they're both using the same EFS file system.
+As you can see, even though we created the file through the first Pod, the second Pod has immediate access to it because they're both accessing the same shared EFS file system.
 
-Now we can confirm the image is available through the UI:
+Finally, let's confirm that the image is accessible through the UI service:
 
 ```bash
 $ LB_HOSTNAME=$(kubectl -n ui get service ui-nlb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}{"\n"}')
@@ -152,4 +152,4 @@ Visit the URL in your browser:
 <img src={require('./assets/placeholder.jpg').default}/>
 </Browser>
 
-With that we've successfully demonstrated how we can use Amazon EFS for persistent shared storage for workloads running on EKS.
+We've successfully demonstrated how Amazon EFS provides persistent shared storage for workloads running on Amazon EKS. This solution allows multiple pods to read from and write to the same storage volume simultaneously, making it ideal for shared content hosting and other use cases requiring distributed file system access.

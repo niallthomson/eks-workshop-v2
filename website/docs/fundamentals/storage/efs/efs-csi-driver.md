@@ -29,7 +29,10 @@ NAME           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTO
 efs-csi-node   3         3         3       3            3           kubernetes.io/os=linux        47s
 ```
 
-The EFS CSI driver supports both dynamic and static provisioning. For dynamic provisioning, the driver creates an access point for each PersistentVolume, but requires an existing AWS EFS file system that must be specified in the StorageClass parameters. Static provisioning also requires a pre-created AWS EFS file system, which can then be mounted as a volume inside a container using the driver.
+The EFS CSI driver supports both dynamic and static provisioning:
+
+- **Dynamic provisioning**: The driver creates an access point for each PersistentVolume. This requires an existing AWS EFS file system that must be specified in the StorageClass parameters.
+- **Static provisioning**: This also requires a pre-created AWS EFS file system, which can then be mounted as a volume inside a container using the driver.
 
 An EFS file system has been provisioned for us, along with mount targets and the required security group that includes an inbound rule allowing NFS traffic to the EFS mount points. Let's get its ID which we'll need later:
 
@@ -75,4 +78,4 @@ VolumeBindingMode:     Immediate
 Events:                <none>
 ```
 
-Now that we understand EKS StorageClass and the EFS CSI driver, we'll proceed to modify the UI component to use the EFS `StorageClass` with Kubernetes dynamic volume provisioning and a PersistentVolume for storing product images.
+Now that we understand the EFS StorageClass and how the EFS CSI driver works, we're ready to proceed to the next step where we'll modify the UI component to use the EFS `StorageClass` with Kubernetes dynamic volume provisioning and a PersistentVolume for storing product images.
