@@ -125,7 +125,7 @@ Namespace:              ui
 [...]
 ```
 
-Now let's demonstrate the shared storage functionality. First, we'll list and create files in the first pod:
+Now let's demonstrate the shared storage functionality, list the current files in `/mountpoint-s3` through one of the UI component Pods:
 
 ```bash
 $ POD_1=$(kubectl -n ui get pods -o jsonpath='{.items[0].metadata.name}')
@@ -142,10 +142,15 @@ d27cf49f-b689-4a75-a249-d373e0330bb5.jpg
 d3104128-1d14-4465-99d3-8ab9267c687b.jpg
 d4edfedb-dbe9-4dd9-aae8-009489394955.jpg
 d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
+```
+
+We can see the list of images matches what we uploaded to the S3 bucket earlier. Now lets generate a new image called `placeholder.jpg` and add it to EFS through the same Pod:
+
+```bash
 $ kubectl exec --stdin $POD_1 -n ui -- bash -c 'curl -o /mountpoint-s3/placeholder.jpg https://placehold.co/600x400/jpg?text=EKS+Workshop\\nPlaceholder'
 ```
 
-To verify the persistence and sharing of our storage layer, let's check the second pod for the file we just created:
+To verify the persistence and sharing of our storage layer, let's check for the file we just created using the second UI Pod:
 
 ```bash
 $ POD_2=$(kubectl -n ui get pods -o jsonpath='{.items[1].metadata.name}')
@@ -162,7 +167,7 @@ d27cf49f-b689-4a75-a249-d373e0330bb5.jpg
 d3104128-1d14-4465-99d3-8ab9267c687b.jpg
 d4edfedb-dbe9-4dd9-aae8-009489394955.jpg
 d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
-placholder.jpg      <----------------
+placeholder.jpg      <----------------
 ```
 
 Finally, verify its presence in the S3 bucket:
@@ -188,13 +193,13 @@ Now we can confirm the image is available through the UI:
 
 ```bash
 $ LB_HOSTNAME=$(kubectl -n ui get service ui-nlb -o jsonpath='{.status.loadBalancer.ingress[*].hostname}{"\n"}')
-$ echo "http://$LB_HOSTNAME"
-http://k8s-ui-uinlb-647e781087-6717c5049aa96bd9.elb.us-west-2.amazonaws.com
+$ echo "http://$LB_HOSTNAME/assets/img/products/placeholder.jpg"
+http://k8s-ui-uinlb-647e781087-6717c5049aa96bd9.elb.us-west-2.amazonaws.com/assets/img/products/placeholder.jpg
 ```
 
 Visit the URL in your browser:
 
-<Browser url="http://k8s-ui-uinlb-647e781087-6717c5049aa96bd9.elb.us-west-2.amazonaws.com">
+<Browser url="http://k8s-ui-uinlb-647e781087-6717c5049aa96b...">
 <img src={require('./assets/placeholder.jpg').default}/>
 </Browser>
 
