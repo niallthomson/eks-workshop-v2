@@ -23,6 +23,15 @@ You can view the Terraform that applies these changes [here](https://github.com/
 
 :::
 
-[Argo CD](https://argoproj.github.io/cd/) is a declarative continuous delivery tool for Kubernetes that follows GitOps principles. It runs as a controller in your cluster and monitors Git repositories for changes, automatically synchronizing applications to match the state defined in your Git repository.
+[Argo CD](https://argoproj.github.io/cd/) is a declarative continuous delivery tool for Kubernetes that implements GitOps principles. It operates as a controller within your cluster, continuously monitoring Git repositories for changes and automatically synchronizing applications to match the desired state defined in your Git repository.
 
-Argo CD is a CNCF graduated project that provides a web UI for managing deployments, supports multi-cluster configurations, and can integrate with CI/CD pipelines. It includes features like access controls, drift detection, and support for different deployment strategies.
+As a CNCF graduated project, Argo CD offers several key features:
+
+- An intuitive web UI for deployment management
+- Multi-cluster configuration support
+- Integration with CI/CD pipelines
+- Robust access controls
+- Drift detection capabilities
+- Support for various deployment strategies
+
+By using Argo CD, you can ensure that your Kubernetes applications remain consistent with their source configurations and automatically remediate any drift that occurs between the desired and actual states.

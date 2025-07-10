@@ -3,7 +3,9 @@ title: "Adding more workloads"
 sidebar_position: 60
 ---
 
-Now that we've set up the foundation of the App of Apps pattern we can add the additional workload Helm charts to the Git repository.
+Now that we've set up the foundation of the App of Apps pattern, we can add the additional workload Helm charts to the Git repository.
+
+The repository structure will look like this after adding the application charts:
 
 ```text
 .
@@ -21,14 +23,14 @@ Now that we've set up the foundation of the App of Apps pattern we can add the a
     `-- Chart.yaml
 ```
 
-Copy files to the Git repository directory:
+Let's copy the application chart files to our Git repository directory:
 
 ```bash
 $ cp -R ~/environment/eks-workshop/modules/automation/gitops/argocd/app-charts/* \
   ~/environment/argocd/
 ```
 
-Push changes to the Git repository:
+Next, commit and push these changes to the Git repository:
 
 ```bash
 $ git -C ~/environment/argocd add .
@@ -43,11 +45,11 @@ $ argocd app sync apps
 $ argocd app wait -l app.kubernetes.io/created-by=eks-workshop
 ```
 
-When Argo CD finish the sync, all our applications will be in `Synced` state.
+When Argo CD completes the process, all our applications will be in the `Synced` state as shown in the ArgoCD UI:
 
 ![argocd-ui-apps.png](assets/argocd-ui-apps-synced.webp)
 
-We should now have a set of new namespaces with the application components deployed:
+We should now see a set of new namespaces with each application component deployed:
 
 ```bash hook=deploy
 $ kubectl get namespaces
@@ -64,10 +66,12 @@ orders            Active   28s
 ui                Active   11m
 ```
 
-We can more closely inspect one of the workloads, for example the catalog component, to see that it is deployed:
+Let's examine one of the deployed workloads more closely. For example, we can check the carts component:
 
 ```bash
 $ kubectl get deployment -n carts
 NAME    READY   UP-TO-DATE   AVAILABLE   AGE
 carts   1/1     1            1           46s
 ```
+
+This confirms that our GitOps-based deployment using the App of Apps pattern has successfully deployed all microservices to our cluster.
