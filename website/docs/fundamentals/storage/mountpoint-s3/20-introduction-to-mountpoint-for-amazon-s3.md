@@ -5,9 +5,9 @@ sidebar_position: 20
 
 Before proceeding with this section, it's important to understand the Kubernetes storage concepts (volumes, persistent volumes (PV), persistent volume claims (PVC), dynamic provisioning, and ephemeral storage) that were covered in the main [Storage](../index.md) section.
 
-The [Mountpoint for Amazon S3 Container Storage Interface (CSI) Driver](https://github.com/awslabs/mountpoint-s3-csi-driver) enables Kubernetes applications to access Amazon S3 objects using a standard file system interface. Built on [Mountpoint for Amazon S3](https://github.com/awslabs/mountpoint-s3), the Mountpoint CSI driver exposes an Amazon S3 bucket as a storage volume that containers in your Kubernetes cluster can access. The driver implements the [CSI](https://github.com/container-storage-interface/spec/blob/master/spec.md) specification, allowing container orchestrators (CO) to manage storage volumes effectively.
+The [Mountpoint for Amazon S3 Container Storage Interface (CSI) Driver](https://github.com/awslabs/mountpoint-s3-csi-driver) enables Kubernetes applications to access Amazon S3 objects through a standard file system interface. Built on [Mountpoint for Amazon S3](https://github.com/awslabs/mountpoint-s3), the Mountpoint CSI driver exposes an Amazon S3 bucket as a storage volume that containers in your Kubernetes cluster can seamlessly access. The driver implements the [CSI](https://github.com/container-storage-interface/spec/blob/master/spec.md) specification, allowing container orchestrators (CO) to efficiently manage storage volumes.
 
-The following architecture diagram illustrates how we will use Mountpoint for Amazon S3 as persistent storage for our EKS pods:
+The following architecture diagram illustrates how we will use Mountpoint for Amazon S3 as persistent storage for our Pods:
 
 ![Assets with S3](./assets/s3-storage.webp)
 
@@ -36,12 +36,12 @@ Archive:  /tmp/sample-images.zip
 Next, we'll copy these image assets to our S3 bucket using the `aws s3 cp` command:
 
 ```bash
-$ aws s3 cp ~/environment/assets-images/ s3://$BUCKET_NAME/ --recursive
+$ aws s3 cp ~/environment/assets-images/ s3://$BUCKET_NAME/
 upload: assets-images/79bce3f3-935f-4912-8c62-0d2f3e059405.jpg to s3://eks-workshop-mountpoint-s320250709143521722200000002/79bce3f3-935f-4912-8c62-0d2f3e059405.jpg
 [...]
 ```
 
-We can verify the uploaded objects in our bucket using the `aws s3 ls` command:
+We can verify the uploaded objects in our bucket using the `aws s3 ls` command to list the contents:
 
 ```bash
 $ aws s3 ls $BUCKET_NAME
@@ -59,7 +59,7 @@ $ aws s3 ls $BUCKET_NAME
 2025-07-09 14:43:36     134344 d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 ```
 
-With our initial objects now in the Amazon S3 bucket, we'll configure the Mountpoint for Amazon S3 CSI driver to provide persistent, shared storage for our pods.
+With our initial objects now in the Amazon S3 bucket, we'll configure the Mountpoint for Amazon S3 CSI driver to provide persistent, shared storage for our Pods.
 
 Let's install the Mountpoint for Amazon S3 CSI addon to our EKS cluster. This operation will take a few minutes to complete:
 
@@ -69,7 +69,7 @@ $ aws eks create-addon --cluster-name $EKS_CLUSTER_NAME --addon-name aws-mountpo
 $ aws eks wait addon-active --cluster-name $EKS_CLUSTER_NAME --addon-name aws-mountpoint-s3-csi-driver
 ```
 
-Once completed, we can verify what the addon created in our EKS cluster:
+Once completed, we can verify what the addon created in our EKS cluster by checking the DaemonSet that was deployed:
 
 ```bash
 $ kubectl get daemonset s3-csi-node -n kube-system

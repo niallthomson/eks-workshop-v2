@@ -37,4 +37,4 @@ Namespace:              ui
 
 Looking at the [`Volumes`](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir-configuration-example) section, we can see that the Deployment currently uses an [EmptyDir volume type](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) that exists only for the Pod's lifetime.
 
-However in the case of the UI component the product images are currently being served as [static web content](https://spring.io/blog/2013/12/19/serving-static-web-content-with-spring-boot) via Spring Boot, so the images are not even present on the filesystem.
+However, in the case of the UI component, the product images are currently being served as [static web content](https://spring.io/blog/2013/12/19/serving-static-web-content-with-spring-boot) via Spring Boot, so the images are not even present on the filesystem.

@@ -55,7 +55,7 @@ $ kubectl get deployment -n ui -o yaml | yq '.items[].spec.template.spec.contain
   name: tmp-volume
 ```
 
-Examine our newly created PersistentVolume:
+Now let's examine our newly created PersistentVolume:
 
 ```bash
 $ kubectl get pv
@@ -63,7 +63,7 @@ NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             ST
 s3-pv   1Gi        RWX            Retain           Bound    ui/s3-claim                      <unset>                          2m31s
 ```
 
-Review the PersistentVolumeClaim details:
+Let's review the PersistentVolumeClaim details:
 
 ```bash
 $ kubectl describe pvc -n ui
@@ -83,7 +83,7 @@ Used By:       ui-9fbbbcd6f-c74vv
 Events:        <none>
 ```
 
-Verify our running pods:
+Let's verify our running pods:
 
 ```bash
 $ kubectl get pods -n ui
@@ -92,7 +92,7 @@ ui-9fbbbcd6f-c74vv    1/1     Running   0          2m36s
 ui-9fbbbcd6f-vb9jz    1/1     Running   0          2m38s
 ```
 
-Let's examine our final deployment configuration with the Mountpoint for Amazon S3 CSI driver:
+Now let's examine our final deployment configuration with the Mountpoint for Amazon S3 CSI driver:
 
 ```bash
 $ kubectl describe deployment -n ui
@@ -125,7 +125,7 @@ Namespace:              ui
 [...]
 ```
 
-Now let's demonstrate the shared storage functionality, list the current files in `/mountpoint-s3` through one of the UI component Pods:
+Now let's demonstrate the shared storage functionality. First, we'll list the current files in `/mountpoint-s3` through one of the UI component Pods:
 
 ```bash
 $ POD_1=$(kubectl -n ui get pods -o jsonpath='{.items[0].metadata.name}')
@@ -144,7 +144,7 @@ d4edfedb-dbe9-4dd9-aae8-009489394955.jpg
 d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 ```
 
-We can see the list of images matches what we uploaded to the S3 bucket earlier. Now lets generate a new image called `placeholder.jpg` and add it to EFS through the same Pod:
+We can see the list of images matches what we uploaded to the S3 bucket earlier. Now let's generate a new image called `placeholder.jpg` and add it to our S3 bucket through the same Pod:
 
 ```bash
 $ kubectl exec --stdin $POD_1 -n ui -- bash -c 'curl -o /mountpoint-s3/placeholder.jpg https://placehold.co/600x400/jpg?text=EKS+Workshop\\nPlaceholder'
@@ -170,7 +170,7 @@ d77f9ae6-e9a8-4a3e-86bd-b72af75cbc49.jpg
 placeholder.jpg      <----------------
 ```
 
-Finally, verify its presence in the S3 bucket:
+Finally, let's verify its presence in the S3 bucket:
 
 ```bash
 $ aws s3 ls $BUCKET_NAME
@@ -203,4 +203,4 @@ Visit the URL in your browser:
 <img src={require('./assets/placeholder.jpg').default}/>
 </Browser>
 
-With that we've successfully demonstrated how we can use Mountpoint for Amazon S3 for persistent shared storage for workloads running on EKS.
+With that, we've successfully demonstrated how we can use Mountpoint for Amazon S3 for persistent shared storage for workloads running on EKS.
