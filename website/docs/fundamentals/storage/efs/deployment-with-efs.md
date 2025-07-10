@@ -20,7 +20,7 @@ Deployment/ui
 
 Apply these changes with the following command:
 
-```bash
+```bash hook=efs-deployment
 $ kubectl apply -k ~/environment/eks-workshop/modules/fundamentals/storage/efs/deployment
 namespace/ui unchanged
 serviceaccount/ui unchanged

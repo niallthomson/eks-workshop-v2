@@ -26,7 +26,7 @@ Deployment/ui
 
 Now let's apply this configuration and redeploy our application:
 
-```bash
+```bash hook=s3-deployment
 $ kubectl kustomize ~/environment/eks-workshop/modules/fundamentals/storage/s3/deployment \
   | envsubst | kubectl apply -f-
 namespace/ui unchanged
