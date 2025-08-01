@@ -64,7 +64,7 @@ metadata:
   namespace: carts
 ```
 
-Now, we need to recycle all the carts pods to pick up our new ConfigMap contents:
+Now, we need to recycle all the carts Pods to pick up our new ConfigMap contents:
 
 ```bash expectError=true hook=enable-dynamo
 $ kubectl rollout restart -n carts deployment/carts
