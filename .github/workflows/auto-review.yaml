@@ -46,6 +46,8 @@ jobs:
 
           yarn toolkit-md review --write --summary-path /tmp/summary.md "$target_directory"
 
+          echo "\n\nFormatting..."
+
           yarn prettier --write "$target_directory"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7

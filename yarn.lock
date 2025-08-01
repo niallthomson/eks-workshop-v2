@@ -908,9 +908,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws/toolkit-md@npm:^0.1.4":
-  version: 0.1.4
-  resolution: "@aws/toolkit-md@npm:0.1.4"
+"@aws/toolkit-md@npm:^0.1.5":
+  version: 0.1.5
+  resolution: "@aws/toolkit-md@npm:0.1.5"
   dependencies:
     "@aws-sdk/client-bedrock-runtime": "npm:^3.785.0"
     chalk: "npm:^5.3.0"
@@ -926,7 +926,7 @@ __metadata:
     zod: "npm:^3.25.68"
   bin:
     toolkit-md: ./dist/cli.js
-  checksum: 10c0/049225051e2abb333bc78131237681ecee9e7dc92e9333b98b794e34d81745794f2ceaecf186a58c0ce0af7ca94c4cab623f79a75aed08b886862c1864e221d5
+  checksum: 10c0/c03e8d4f8b437f900ada64092b33630fe502c4039b9bf16f877b02236155bc8a5af316b1fed944285613d4db72aa514562ff2c491e219816cd62f9cf76d14ac4
   languageName: node
   linkType: hard
 
@@ -8760,7 +8760,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "eks-workshop@workspace:."
   dependencies:
-    "@aws/toolkit-md": "npm:^0.1.4"
+    "@aws/toolkit-md": "npm:^0.1.5"
     "@docusaurus/core": "npm:^3.7.0"
     "@docusaurus/module-type-aliases": "npm:^3.7.0"
     "@docusaurus/preset-classic": "npm:^3.7.0"
