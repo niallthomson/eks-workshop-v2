@@ -44,7 +44,7 @@ jobs:
 
           yarn install
 
-          yarn toolkit-md review --write --summary-file /tmp/summary.md "$target_directory"
+          yarn toolkit-md review --write --summary-path /tmp/summary.md "$target_directory"
 
           yarn prettier --write "$target_directory"
       - name: Create Pull Request
