@@ -4,30 +4,7 @@ sidebar_position: 34
 hide_table_of_contents: true
 ---
 
-To use EKS Pod Identity in your cluster, the `EKS Pod Identity Agent` addon must be installed on your EKS cluster. Let's install it using below command.
-
-```bash timeout=300 wait=60
-$ aws eks create-addon --cluster-name $EKS_CLUSTER_NAME --addon-name eks-pod-identity-agent
-{
-    "addon": {
-        "addonName": "eks-pod-identity-agent",
-        "clusterName": "eks-workshop",
-        "status": "CREATING",
-        "addonVersion": "v1.1.0-eksbuild.1",
-        "health": {
-            "issues": []
-        },
-        "addonArn": "arn:aws:eks:us-west-2:1234567890:addon/eks-workshop/eks-pod-identity-agent/9ec6cfbd-8c9f-7ff4-fd26-640dda75bcea",
-        "createdAt": "2024-01-12T22:41:01.414000+00:00",
-        "modifiedAt": "2024-01-12T22:41:01.434000+00:00",
-        "tags": {}
-    }
-}
-
-$ aws eks wait addon-active --cluster-name $EKS_CLUSTER_NAME --addon-name eks-pod-identity-agent
-```
-
-Now, take a look at what has been created in your EKS cluster by the new addon. You can see a DaemonSet deployed on the `kube-system` Namespace, which will run a Pod on each Node in our Cluster.
+To use EKS Pod Identity in your cluster, the `EKS Pod Identity Agent` addon must be installed on your Amazon EKS cluster. This addon has already been installed for you when you ran the `prepare-environment` script at the beginning of this module. Let's verify that it's running:
 
 ```bash
 $ kubectl -n kube-system get daemonset eks-pod-identity-agent
@@ -40,7 +17,9 @@ eks-pod-identity-agent-hslc5   1/1     Running   0          3d21h
 eks-pod-identity-agent-thvf5   1/1     Running   0          3d21h
 ```
 
-An IAM role, which provides the required permissions for the `carts` service to read and write to DynamoDB table has been created when you ran the `prepare-environment` script in the first step of this module. You can view the policy as shown below.
+As you can see, the EKS Pod Identity Agent runs as a DaemonSet in the `kube-system` namespace, with a Pod on each Node in our cluster.
+
+An IAM role that provides the required permissions for the `carts` service to read and write to the DynamoDB table was created when you ran the `prepare-environment` script. You can view the policy attached to this role with the following command:
 
 ```bash
 $ aws iam get-policy-version \
@@ -63,7 +42,7 @@ $ aws iam get-policy-version \
 }
 ```
 
-The role has also been configured with the appropriate trust relationship, which allows the EKS Service Principal to assume this role for Pod Identity. You can view it with the command below.
+The role has also been configured with the appropriate trust relationship, which allows the EKS Service Principal to assume this role for Pod Identity. You can view it with the command below:
 
 ```bash
 $ aws iam get-role \
@@ -86,7 +65,7 @@ $ aws iam get-role \
 }
 ```
 
-Next, we will use Amazon EKS Pod Identity feature to associate an AWS IAM role to the Kubernetes service account that will be used by our deployment. To create the association, run the following command.
+Now, we need to create an association between our IAM role and the Kubernetes Service Account used by our `carts` deployment. To create this association, run the following command:
 
 ```bash wait=30
 $ aws eks create-pod-identity-association --cluster-name ${EKS_CLUSTER_NAME} \
@@ -107,14 +86,14 @@ $ aws eks create-pod-identity-association --cluster-name ${EKS_CLUSTER_NAME} \
 }
 ```
 
-All that's left is to verify that the `carts` Deployment is using the `carts` Service Account.
+Let's verify that the `carts` Deployment is using the `carts` Service Account:
 
 ```bash
 $ kubectl -n carts describe deployment carts | grep 'Service Account'
   Service Account:  carts
 ```
 
-With the Service Account verified, let's recycle the `carts` Pods.
+With the Service Account verified, let's recycle the `carts` Pods to pick up the new Pod Identity association:
 
 ```bash hook=enable-pod-identity hookTimeout=430
 $ kubectl -n carts rollout restart deployment/carts
@@ -124,4 +103,4 @@ Waiting for deployment "carts" rollout to finish: 1 old replicas are pending ter
 deployment "carts" successfully rolled out
 ```
 
-Now, let's verify if the DynamoDB permission issue that we had encountered has been resolved for carts application in the next section.
+In the next section, we'll verify if the DynamoDB permission issue that we encountered earlier has been resolved for the `carts` application.
